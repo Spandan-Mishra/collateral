@@ -9,10 +9,10 @@ datasource db {
 
 model User {
   id          String   @id @default(cuid())
-  email       String   
-  password    String
-  name        String
-  photo       String
+  email       String   @unique
+  password    String   
+  username    String   @unique
+  photo       String?
   rooms       Room[]
   chat        Chat[]
 }
@@ -20,6 +20,7 @@ model User {
 model Room {
   id         Int    @id @default(autoincrement())
   slug       String @unique
+  name       String
   createdAt  DateTime @default(now())
   adminId    String
   admin      User    @relation(fields: [adminId], references: [id])

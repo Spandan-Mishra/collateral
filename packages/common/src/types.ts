@@ -12,5 +12,5 @@ export const LoginUserSchema = z.object({
 })
 
 export const CreateRoomSchema = z.object({
-    roomId: z.string().length(6, { message: "Room ID must be 6 characters long" }),
+    name: z.string(),
 })
