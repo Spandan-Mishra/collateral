@@ -7,19 +7,23 @@ export const userMiddleware = (req: Request, res: Response, next: NextFunction) 
         const header = req.headers.authorization ?? "";
         const decoded = jwt.verify(header, JWT_SECRET);
         
-        if(decoded && typeof decoded == 'object') {
+        if(decoded) {
+            if(typeof decoded !== "object") {
+                res.status(401).json({
+                    message: "Unauthorized",
+                    from: "decoded"
+                });
+                return ;
+            }
             // TODO: fix
             // @ts-ignore
             req.userId = decoded.userId;
             next();
-        }
-
-        res.status(401).json({
-            message: "Unauthorized",
-        })
+        }1
     } catch(e) {
         res.status(401).json({
             message: "Unauthorized",
+            from: "catch"
         });
     }
 }

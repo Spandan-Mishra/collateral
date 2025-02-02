@@ -96,8 +96,13 @@ app.post('/login', async (req, res) => {
             return ;
         }
 
+        const token = jwt.sign({
+            userId: user.id,
+        }, JWT_SECRET)
+
         res.json({
             mesaage: "Login successful",
+            token
         })
     } catch(e) {
         res.status(400).json({
@@ -119,19 +124,30 @@ app.post('/room', userMiddleware, async (req, res) => {
         const { name } = req.body;
         // @ts-ignore: TODO: fix
         const userId = req.userId;
-        const slug = (await bcrypt.hash(name, 10)).slice(0, 6);
+        const existingRoom = await prismaClient.room.findFirst({
+            where: {
+                slug: name
+            }
+        })
 
-        await prismaClient.room.create({
+        if (existingRoom) {
+            res.status(400).json({
+                message: "Room already exists",
+                roomId: existingRoom.id,
+            })
+            return ;
+        }
+
+        const room = await prismaClient.room.create({
             data: {
-                slug,
-                name,
+                slug: name,
                 adminId: userId,
             }
         })
 
         res.json({
             message: "Room created",
-            roomId: slug,
+            roomId: room.id,
         })
 
     } catch(e) {
@@ -139,6 +155,33 @@ app.post('/room', userMiddleware, async (req, res) => {
             message: "Error creating room",
         })
     }
+})
+
+app.get("/chats/:roomId", async (req, res) => {
+    const roomId = Number(req.params.roomId);
+    const messages = await prismaClient.chat.findMany({
+        where: {
+            roomId
+        },
+        take: 30,
+    });
+
+    res.json({
+        messages
+    })
+})
+
+app.get("/room/:slug", async (req, res) => {
+    const slug = req.params.slug;
+    const room = await prismaClient.room.findFirst({
+        where: {
+            slug
+        }
+    });
+
+    res.json({
+        room
+    })
 })
 
 app.listen(3001, () => {
