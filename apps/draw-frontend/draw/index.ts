@@ -1,30 +1,40 @@
-import { HTTP_BACKEND } from "@/config";
+import { HTTP_BACKEND, WS_URL } from "@/config";
 import axios from "axios";
 import { responseCookiesToRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 
 type Shape = {
     type: "rectangle";
-    startX: number;
-    startY: number;
-    width: number;
-    height: number;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
 } | {
     type: "circle";
-    startX: number;
-    startY: number;
-    radius: number;
+    x: number;
+    y: number;
+    r: number;
 }
 
-const initCanvas = async (canvas: HTMLCanvasElement, slug: string) => {
+const initCanvas = async (canvas: HTMLCanvasElement, slug: string, socket: WebSocket | null) => {
     const ctx = canvas.getContext('2d');
 
-    if (!ctx) {
+    if (!ctx || !socket) {
         return ;
     }
 
-    let existingShapes: Shape[] = await getExistingShapes(slug);
-
+    const roomId = await getRoomId(slug);
+    let existingShapes: Shape[] = await getExistingShapes(roomId);
     renderShapes(existingShapes, ctx, canvas);
+
+    socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+
+        if(message.type === "chat") {
+            const shape = JSON.parse(message.message);
+            existingShapes.push(shape);
+            renderShapes(existingShapes, ctx, canvas);
+        }
+    }
 
     let clicked = false;
     let startX = 0, startY = 0;
@@ -37,13 +47,20 @@ const initCanvas = async (canvas: HTMLCanvasElement, slug: string) => {
 
     canvas.addEventListener('mouseup', (e) => {
         clicked = false;
-        existingShapes.push({
+        const shape: Shape = {
             type: "rectangle",
-            startX,
-            startY,
-            width: e.clientX - startX,
-            height: e.clientY - startY
-        })
+            x: startX,
+            y: startY,
+            w: e.clientX - startX,
+            h: e.clientY - startY
+        }
+        existingShapes.push(shape)
+
+        socket.send(JSON.stringify({
+            type: "chat",
+            message: JSON.stringify(shape),
+            roomId
+        }))
     })
 
     canvas.addEventListener('mousemove', (e) => {
@@ -65,13 +82,12 @@ const renderShapes = (existingShapes: Shape[], ctx: CanvasRenderingContext2D, ca
         existingShapes.forEach(shape => {
             if(shape.type == "rectangle") {
                 ctx.strokeStyle = 'white';
-                ctx.strokeRect(shape.startX, shape.startY, shape.width, shape.height);
+                ctx.strokeRect(shape.x, shape.y, shape.w, shape.h);
             }
         })
 }
 
-const getExistingShapes = async (slug: string) => {
-    const roomId = await getRoomId(slug);
+const getExistingShapes = async (roomId: string) => {
     const response = await axios.get(`${HTTP_BACKEND}/chats/${roomId}`);
     const messages = response.data.messages;
 

@@ -1,4 +1,4 @@
-import Canvas from "@/components/Canvas";
+import CanvasRoom from "@/components/CanvasRoom";
 
 const CanvasPage = async ({ params } : {
     params: {
@@ -7,7 +7,7 @@ const CanvasPage = async ({ params } : {
 }) => {
     const slug = (await params).slug;
 
-    return <Canvas slug={slug} />
+    return <CanvasRoom slug={slug} />
 }
 
 export default CanvasPage;

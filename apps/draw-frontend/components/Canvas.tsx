@@ -1,13 +1,21 @@
-"use client";
+import { HTTP_BACKEND } from "@/config";
 import initCanvas from "@/draw";
+import axios from "axios";
 import { useEffect, useRef } from "react";
 
-const Canvas = ({ slug }: { slug: string }) => {
+const Canvas = ({
+    socket, 
+    slug
+
+}: {
+    socket: WebSocket | null,
+    slug: string
+}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null); 
 
     useEffect(() => {
         if (canvasRef.current) {
-            initCanvas(canvasRef.current, slug);
+            initCanvas(canvasRef.current, slug, socket);
         }
     })
 
