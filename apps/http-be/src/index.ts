@@ -5,9 +5,11 @@ import { JWT_SECRET } from '@repo/backend-common/config';
 import { userMiddleware } from './middleware';
 import { CreateUserSchema, LoginUserSchema, CreateRoomSchema } from '@repo/common/types';
 import { prismaClient } from '@repo/db/client';
+import cors from 'cors';
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 app.post('/signup', async (req, res) => {
     try {

@@ -1,21 +1,13 @@
-"use client";
-import initCanvas from "@/draw";
-import { useEffect, useRef } from "react";
+import Canvas from "@/components/Canvas";
 
-const Canvas = () => {
-    const canvasRef = useRef<HTMLCanvasElement>(null); 
+const CanvasPage = async ({ params } : {
+    params: {
+        slug: string
+    }
+}) => {
+    const slug = (await params).slug;
 
-    useEffect(() => {
-        if (canvasRef.current) {
-            initCanvas(canvasRef.current);
-        }
-    })
-
-    return (
-        <div>
-            <canvas ref={canvasRef} width={1920} height={1080}></canvas>
-        </div>
-    )
+    return <Canvas slug={slug} />
 }
 
-export default Canvas;
+export default CanvasPage;
