@@ -1,6 +1,5 @@
-import { HTTP_BACKEND, WS_URL } from "@/config";
+import { HTTP_BACKEND } from "@/config";
 import axios from "axios";
-import { responseCookiesToRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 
 type Shape = {
     type: "rectangle";
@@ -12,7 +11,8 @@ type Shape = {
     type: "circle";
     x: number;
     y: number;
-    r: number;
+    rx: number;
+    ry: number;
 }
 
 const initCanvas = async (canvas: HTMLCanvasElement, slug: string, socket: WebSocket | null) => {
@@ -23,7 +23,7 @@ const initCanvas = async (canvas: HTMLCanvasElement, slug: string, socket: WebSo
     }
 
     const roomId = await getRoomId(slug);
-    let existingShapes: Shape[] = await getExistingShapes(roomId);
+    const existingShapes: Shape[] = await getExistingShapes(roomId);
     renderShapes(existingShapes, ctx, canvas);
 
     socket.onmessage = (event) => {
@@ -47,12 +47,25 @@ const initCanvas = async (canvas: HTMLCanvasElement, slug: string, socket: WebSo
 
     canvas.addEventListener('mouseup', (e) => {
         clicked = false;
-        const shape: Shape = {
-            type: "rectangle",
-            x: startX,
-            y: startY,
-            w: e.clientX - startX,
-            h: e.clientY - startY
+        let shape: Shape | null = null;
+        //@ts-ignore
+        const currentTool = window.currentTool;
+        if(currentTool === "rectangle") {
+            shape = {
+                type: "rectangle",
+                x: startX,
+                y: startY,
+                w: e.clientX - startX,
+                h: e.clientY - startY
+            }
+        } else {
+            shape = {
+                type: "circle",
+                x: startX,
+                y: startY,
+                rx: e.clientX - startX,
+                ry: e.clientY - startY
+            }
         }
         existingShapes.push(shape)
 
@@ -69,7 +82,15 @@ const initCanvas = async (canvas: HTMLCanvasElement, slug: string, socket: WebSo
             const height = e.clientY - startY;
             renderShapes(existingShapes, ctx, canvas);
             ctx.strokeStyle = 'white';
-            ctx.strokeRect(startX, startY, width, height);
+            //@ts-ignore
+            const currentTool = window.currentTool;
+            if(currentTool === "rectangle") {
+                ctx.strokeRect(startX, startY, width, height);
+            } else {
+                ctx.beginPath();
+                ctx.ellipse(startX, startY, Math.abs(width), Math.abs(height), 0, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
         }
     })
 }
@@ -83,6 +104,11 @@ const renderShapes = (existingShapes: Shape[], ctx: CanvasRenderingContext2D, ca
             if(shape.type == "rectangle") {
                 ctx.strokeStyle = 'white';
                 ctx.strokeRect(shape.x, shape.y, shape.w, shape.h);
+            } else {
+                ctx.beginPath();
+                ctx.ellipse(shape.x, shape.y, shape.rx, shape.ry, 0, 0, 2 * Math.PI);
+                ctx.strokeStyle = 'white';
+                ctx.stroke();
             }
         })
 }

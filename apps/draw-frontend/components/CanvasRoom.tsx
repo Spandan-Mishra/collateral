@@ -1,7 +1,5 @@
 "use client";
-import initCanvas from "@/draw";
 import useSocket from "@/hooks/useSocket";
-import { useEffect, useRef } from "react";
 import Canvas from "./Canvas";
 
 const CanvasRoom = ({ slug }: { slug: string }) => {
