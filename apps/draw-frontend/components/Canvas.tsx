@@ -1,5 +1,7 @@
 import { Game } from "@/draw/Game";
+import { Circle, Pencil, Square } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import IconButton from "./IconButton";
 
 type Tools = "rectangle" | "circle" | "pencil";
 
@@ -30,10 +32,10 @@ const Canvas = ({
     return (
         <div className="overflow-hidden h-screen">
             <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
-            <div className="absolute top-4 left-1/2 flex gap-2">
-                <button onClick={() => setSelectedTool("rectangle")}>Rect</button>
-                <button onClick={() => setSelectedTool("circle")}>Circle</button>
-                <button onClick={() => setSelectedTool("pencil")}>Pencil</button>
+            <div className="absolute top-4 w-screen flex justify-center items-center gap-2">
+                <IconButton onClick={() => setSelectedTool("rectangle")} icon={<Square />} activated={selectedTool === "rectangle"} />
+                <IconButton onClick={() => setSelectedTool("circle")} icon={<Circle />} activated={selectedTool === "circle"} />
+                <IconButton onClick={() => setSelectedTool("pencil")} icon={<Pencil />} activated={selectedTool === "pencil"} />
             </div>
         </div>
     )
