@@ -33,6 +33,7 @@ const Canvas = ({
             <div className="absolute top-4 left-1/2 flex gap-2">
                 <button onClick={() => setSelectedTool("rectangle")}>Rect</button>
                 <button onClick={() => setSelectedTool("circle")}>Circle</button>
+                <button onClick={() => setSelectedTool("pencil")}>Pencil</button>
             </div>
         </div>
     )

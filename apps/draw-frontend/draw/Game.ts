@@ -69,13 +69,21 @@ export class Game {
                     w: e.clientX - this.startX,
                     h: e.clientY - this.startY
                 }
-            } else {
+            } else if(this.selectedTool === "circle") {
                 shape = {
                     type: "circle",
                     x: this.startX,
                     y: this.startY,
                     rx: Math.abs(e.clientX - this.startX),
                     ry: Math.abs(e.clientY - this.startY)
+                }
+            } else {
+                shape = {
+                    type: "pencil",
+                    x1: this.startX,
+                    y1: this.startY,
+                    x2: e.clientX,
+                    y2: e.clientY
                 }
             }
             this.existingShapes.push(shape)
@@ -96,9 +104,14 @@ export class Game {
 
                 if(this.selectedTool === "rectangle") {
                     this.ctx.strokeRect(this.startX, this.startY, width, height);
-                } else {
+                } else if(this.selectedTool === "circle") {
                     this.ctx.beginPath();
                     this.ctx.ellipse(this.startX, this.startY, Math.abs(width), Math.abs(height), 0, 0, 2 * Math.PI);
+                    this.ctx.stroke();
+                } else {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.startX, this.startY);
+                    this.ctx.lineTo(e.clientX, e.clientY);
                     this.ctx.stroke();
                 }
             }
@@ -111,13 +124,18 @@ export class Game {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.existingShapes.forEach(shape => {
-            if(shape.type == "rectangle") {
+            if(shape.type === "rectangle") {
                 this.ctx.strokeStyle = 'white';
                 this.ctx.strokeRect(shape.x, shape.y, shape.w, shape.h);
-            } else {
+            } else if(shape.type === "circle") {
                 this.ctx.beginPath();
                 this.ctx.ellipse(shape.x, shape.y, shape.rx, shape.ry, 0, 0, 2 * Math.PI);
                 this.ctx.strokeStyle = 'white';
+                this.ctx.stroke();
+            } else if(shape.type === "pencil") {
+                this.ctx.beginPath();
+                this.ctx.moveTo(shape.x1, shape.y1);
+                this.ctx.lineTo(shape.x2, shape.y2);
                 this.ctx.stroke();
             }
         })

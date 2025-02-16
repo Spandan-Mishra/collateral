@@ -11,6 +11,12 @@ export type Shape = {
     y: number;
     rx: number;
     ry: number;
+} | {
+    type: "pencil";
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
 }
 
 export type Tools = "rectangle" | "circle" | "pencil";
